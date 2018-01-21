@@ -1,4 +1,4 @@
-const QueryBuilder = function() {
+const QueryBuilder = function () {
 
     // ------------------------------ GENERIC FUNCTIONS ------------------------------//
     const array_values = item => {
@@ -6,7 +6,7 @@ const QueryBuilder = function() {
         const length = keys.length;
         const values = Array(length);
         for (let i = 0; i < length; i++) {
-          values[i] = item[keys[i]];
+            values[i] = item[keys[i]];
         }
         return values;
     };
@@ -52,12 +52,12 @@ const QueryBuilder = function() {
         return item;
     }
 
-    const extract_having_parts = (key,key_array) => {
+    const extract_having_parts = (key, key_array) => {
         let m;
-        key = key.trim().replace(/\s+/g,' ');
-        const str_condition  = /^([^\s]+\s(<=|>=|<>|>|<|!=|=))+\s"([^"]+)"$/;  //"// had to do this for syntax highlighting
+        key = key.trim().replace(/\s+/g, ' ');
+        const str_condition = /^([^\s]+\s(<=|>=|<>|>|<|!=|=))+\s"([^"]+)"$/;  //"// had to do this for syntax highlighting
         const sstr_condition = /^([^\s]+\s(<=|>=|<>|>|<|!=|=))+\s'([^']+)'$/;  //'// had to do this for syntax highlighting
-        const num_condition  = /^([^\s]+\s(<=|>=|<>|>|<|!=|=))+\s((?=.)([+-]?([0-9]*)(\.([0-9]+))?))$/;
+        const num_condition = /^([^\s]+\s(<=|>=|<>|>|<|!=|=))+\s((?=.)([+-]?([0-9]*)(\.([0-9]+))?))$/;
         const bool_condition = /^([^\s]+\s(<=|>=|<>|>|<|!=|=))+\s((true|false)+)$/;
 
         if (m = str_condition.exec(key)) {
@@ -87,7 +87,7 @@ const QueryBuilder = function() {
     }
 
     // Simply setting all properties to [] causes reference issues in the parent class.
-    const clear_array = (a,debug) => {
+    const clear_array = (a, debug) => {
         if (debug === true) {
             console.log("DEBUG before (" + Object.prototype.toString.call(a) + "):");
             console.dir(a);
@@ -111,11 +111,11 @@ const QueryBuilder = function() {
     };
 
     // ---------------------------------------- SQL ESCAPE FUNCTIONS ------------------------ //
-    const track_aliases = (qb,table) => {
+    const track_aliases = (qb, table) => {
         if (Object.prototype.toString.call(table) === Object.prototype.toString.call({})) {
             for (let i in table) {
                 const t = table[i];
-                track_aliases(qb,t);
+                track_aliases(qb, t);
             }
             return;
         }
@@ -123,7 +123,7 @@ const QueryBuilder = function() {
         // Does the string contain a comma?  If so, we need to separate
         // the string into discreet statements
         if (table.indexOf(',') !== -1) {
-            return track_aliases(qb,table.split(','));
+            return track_aliases(qb, table.split(','));
         }
 
         // if a table alias is used we can recognize it by a space
@@ -132,7 +132,7 @@ const QueryBuilder = function() {
             table = table.replace(/\s+AS\s+/gi, ' ');
 
             // Grab the alias
-            const alias = table.slice(table.lastIndexOf(' ')).trim().replace(/`/g,'');
+            const alias = table.slice(table.lastIndexOf(' ')).trim().replace(/`/g, '');
 
             // Store the alias, if it doesn't already exist
             if (qb.aliased_tables.indexOf(alias) == -1) {
@@ -173,10 +173,10 @@ const QueryBuilder = function() {
         }
 
         // remove duplicates if the user already included the escape
-        return str.replace(/[`]+/g,'`');
+        return str.replace(/[`]+/g, '`');
     };
 
-    const protect_identifiers = (qb,item,protect_identifiers) => {
+    const protect_identifiers = (qb, item, protect_identifiers) => {
         if (item === '') return item;
 
         protect_identifiers = (typeof protect_identifiers === 'boolean' ? protect_identifiers : true);
@@ -186,7 +186,7 @@ const QueryBuilder = function() {
 
             for (k in item) {
                 const v = item[k];
-                escaped_array[protect_identifiers(qb,k)] = protect_identifiers(qb,v);
+                escaped_array[protect_identifiers(qb, k)] = protect_identifiers(qb, v);
             }
 
             return escaped_array;
@@ -202,11 +202,11 @@ const QueryBuilder = function() {
             const has_alias = item.lastIndexOf(')');
             let alias;
             if (has_alias >= 0) {
-                alias = item.substr(has_alias + 1).replace(/\sAS\s/i,'').trim();
+                alias = item.substr(has_alias + 1).replace(/\sAS\s/i, '').trim();
                 alias = escape_identifiers(alias);
                 if (alias != '')
                     alias = ' AS ' + alias;
-                item = item.substr(0,has_alias + 1);
+                item = item.substr(0, has_alias + 1);
             } else {
                 alias = '';
             }
@@ -220,14 +220,14 @@ const QueryBuilder = function() {
         // Basically we remove everything to the right of the first space
         if (/\sAS\s/ig.test(item)) {
             const alias_index = item.indexOf(item.match(/\sAS\s/ig)[0]);
-            alias = (protect_identifiers ? item.substr(alias_index,4) + escape_identifiers(item.slice(alias_index + 4)) : item.substr(alias_index));
-            item = item.substr(0,alias_index);
+            alias = (protect_identifiers ? item.substr(alias_index, 4) + escape_identifiers(item.slice(alias_index + 4)) : item.substr(alias_index));
+            item = item.substr(0, alias_index);
         }
         else if (item.indexOf(' ') !== -1) {
             const alias_index = item.indexOf(' ');
 
-            alias = (protect_identifiers && ! has_operator(item.substr(alias_index + 1)) ? ' ' + escape_identifiers(item.substr(alias_index + 1)) : item.substr(alias_index));
-            item = item.substr(0,alias_index);
+            alias = (protect_identifiers && !has_operator(item.substr(alias_index + 1)) ? ' ' + escape_identifiers(item.substr(alias_index + 1)) : item.substr(alias_index));
+            item = item.substr(0, alias_index);
         }
 
         // Break the string apart if it contains periods, then insert the table prefix
@@ -235,7 +235,7 @@ const QueryBuilder = function() {
         // with an alias. While we're at it, we will escape the components
         if (item.indexOf('.') !== -1) {
             const parts = item.split('.');
-            const first_seg = parts[0].trim().replace(/`/g,'');
+            const first_seg = parts[0].trim().replace(/`/g, '');
 
             // Does the first segment of the exploded item match
             // one of the aliases previously identified?  If so,
@@ -277,7 +277,7 @@ const QueryBuilder = function() {
         return true;
     };
 
-    const qb_escape = (qb,str) => {
+    const qb_escape = (qb, str) => {
         const SqlString = require('../../node_modules/mysql/lib/protocol/SqlString.js');
         const do_escape = SqlString.escape;
 
@@ -379,7 +379,7 @@ const QueryBuilder = function() {
         const limit_to = qb.limit_to[0] || false;
         const offset_val = qb.offset_val[0] || false;
 
-        sql = build_limit_clause(sql,limit_to,offset_val);
+        sql = build_limit_clause(sql, limit_to, offset_val);
         return sql;
     };
 
@@ -389,13 +389,13 @@ const QueryBuilder = function() {
             return '';
         }
 
-        qb.from_array = qb.from_array.slice(0,1);
+        qb.from_array = qb.from_array.slice(0, 1);
 
         const limit_to = qb.limit_to[0] || false;
         const offset_val = qb.offset_val[0] || false;
 
         const sql = 'DELETE' + build_from_clause(qb) + build_where_clause(qb);
-        return build_limit_clause(sql,limit_to,offset_val);
+        return build_limit_clause(sql, limit_to, offset_val);
     };
 
     const compile_update = qb => {
@@ -426,7 +426,7 @@ const QueryBuilder = function() {
         return build_limit_clause(sql, limit_to, offset_val);
     };
 
-    const compile_insert = (qb, ignore, suffix='') => {
+    const compile_insert = (qb, ignore, suffix = '') => {
         const keys = [];
         const values = [];
 
@@ -472,8 +472,8 @@ const QueryBuilder = function() {
         distinct_clause: [],    // has to be array to work as reference
         aliased_tables: [],
 
-        reset_query: function(new_last_query,debug) {
-            clear_array(this.where_array,debug);
+        reset_query: function (new_last_query, debug) {
+            clear_array(this.where_array, debug);
             clear_array(this.where_in_array);
             clear_array(this.from_array);
             clear_array(this.join_array);
@@ -494,7 +494,7 @@ const QueryBuilder = function() {
             }
         },
 
-        where: function(key, value = null, escape) {
+        where: function (key, value = null, escape) {
             if (Object.prototype.toString.call(key) === Object.prototype.toString.call({}) && typeof value === 'boolean') {
                 escape = (typeof escape === 'boolean' ? escape : value);
             }
@@ -507,7 +507,7 @@ const QueryBuilder = function() {
             return this._where(key, value, 'AND ', escape);
         },
 
-        or_where: function(key, value=null, escape) {
+        or_where: function (key, value = null, escape) {
             escape = (typeof escape === 'boolean' ? escape : true);
 
             if (typeof key === 'string' && typeof value === 'object' && Array.isArray(value) && value.length > 0) {
@@ -516,7 +516,7 @@ const QueryBuilder = function() {
             return this._where(key, value, 'OR ', escape);
         },
 
-        _where: function(key, value=null, type='AND ', escape) {
+        _where: function (key, value = null, type = 'AND ', escape) {
             escape = (typeof escape === 'boolean' ? escape : true);
 
             // Must be an object or a string
@@ -537,11 +537,11 @@ const QueryBuilder = function() {
                     const filters = key.split(/\s+(AND|OR)\s+/i);
                     if (filters.length > 1) {
                         const that = this;
-                        const parse_statement = (statement,joiner) => {
+                        const parse_statement = (statement, joiner) => {
                             const parsed = statement.match(/^([^<>=!]+)(<=|>=|<>|>|<|!=|=)(.*)$/);
                             if (parsed.length >= 4) {
                                 const key = parsed[1].trim() + (parsed[2].trim() !== '=' ? ' ' + parsed[2].trim() : '');
-                                const value = parsed[3].trim().replace(/^((?:'|"){1})(.*)/, "$2").replace(/'$/,'');
+                                const value = parsed[3].trim().replace(/^((?:'|"){1})(.*)/, "$2").replace(/'$/, '');
                                 if (joiner === null || /AND/i.test(joiner)) {
                                     that.where(key, value, true);
                                 } else {
@@ -549,7 +549,7 @@ const QueryBuilder = function() {
                                 }
                             }
                         };
-                        parse_statement(filters.shift(),null);
+                        parse_statement(filters.shift(), null);
                         while (filters.length > 0) {
                             const joiner = filters.shift();
                             const statement = filters.shift();
@@ -572,7 +572,7 @@ const QueryBuilder = function() {
                 let v = key[k];
 
                 if (typeof v === 'object' && Array.isArray(v) && v.length > 0) {
-                    return this._where_in(k,v,false,type,escape);
+                    return this._where_in(k, v, false, type, escape);
                 }
 
                 const prefix = (this.where_array.length == 0 ? '' : type);
@@ -583,12 +583,12 @@ const QueryBuilder = function() {
 
                 if (v !== null) {
                     if (escape === true) {
-                        k = protect_identifiers(this,k,escape);
-                        v = ' ' + qb_escape(this,v);
+                        k = protect_identifiers(this, k, escape);
+                        v = ' ' + qb_escape(this, v);
                     }
 
                     if (escape === false && Object.prototype.toString.call(key) === Object.prototype.toString.call({})) {
-                        v = ' ' + qb_escape(this,v);
+                        v = ' ' + qb_escape(this, v);
                     }
 
                     if (!has_operator(k)) {
@@ -596,37 +596,37 @@ const QueryBuilder = function() {
                     }
                 }
                 else {
-                    k = protect_identifiers(this,k,escape);
+                    k = protect_identifiers(this, k, escape);
                 }
 
                 if (v) {
-                    this.where_array.push(prefix+k+v);
+                    this.where_array.push(prefix + k + v);
                 }
                 else {
-                    this.where_array.push(prefix+k);
+                    this.where_array.push(prefix + k);
                 }
             }
 
             return this;
         },
 
-        where_in: function(key, values, escape) {
-            return this._where_in(key,values,false,'AND ', escape);
+        where_in: function (key, values, escape) {
+            return this._where_in(key, values, false, 'AND ', escape);
         },
 
-        or_where_in: function(key, values, escape) {
-            return this._where_in(key,values,false,'OR ', escape);
+        or_where_in: function (key, values, escape) {
+            return this._where_in(key, values, false, 'OR ', escape);
         },
 
-        where_not_in: function(key, values, escape) {
-            return this._where_in(key,values,true,'AND ', escape);
+        where_not_in: function (key, values, escape) {
+            return this._where_in(key, values, true, 'AND ', escape);
         },
 
-        or_where_not_in: function(key, values, escape) {
-            return this._where_in(key,values,true,'OR ', escape);
+        or_where_not_in: function (key, values, escape) {
+            return this._where_in(key, values, true, 'OR ', escape);
         },
 
-        _where_in: function(key='', values=[], not, type='AND ', escape) {
+        _where_in: function (key = '', values = [], not, type = 'AND ', escape) {
             not = (not ? ' NOT' : '');
             escape = (typeof escape === 'boolean' ? escape : true);
 
@@ -645,11 +645,11 @@ const QueryBuilder = function() {
             }
 
             for (let i in values) {
-                this.where_in_array.push(qb_escape(this,values[i]));
+                this.where_in_array.push(qb_escape(this, values[i]));
             }
 
             const prefix = (this.where_array.length == 0 ? '' : type);
-            const where_in = prefix + protect_identifiers(this,key,escape) + not + " IN (" + this.where_in_array.join(', ') + ")";
+            const where_in = prefix + protect_identifiers(this, key, escape) + not + " IN (" + this.where_in_array.join(', ') + ")";
             this.where_array.push(where_in);
 
             // reset the array for multiple calls
@@ -657,23 +657,23 @@ const QueryBuilder = function() {
             return this;
         },
 
-        like: function(field, match, side) {
+        like: function (field, match, side) {
             return this._like(field, match, 'AND ', side, '');
         },
 
-        not_like: function(field, match, side) {
+        not_like: function (field, match, side) {
             return this._like(field, match, 'AND ', side, ' NOT');
         },
 
-        or_like: function(field, match, side) {
+        or_like: function (field, match, side) {
             return this._like(field, match, 'OR ', side, '');
         },
 
-        or_not_like: function(field, match, side) {
+        or_not_like: function (field, match, side) {
             return this._like(field, match, 'OR ', side, ' NOT');
         },
 
-        _like: function(field, match, type='AND ', side='both', not='') {
+        _like: function (field, match, type = 'AND ', side = 'both', not = '') {
             match = (/^(string|number|boolean)$/.test(typeof match) ? match : null);
 
             if (typeof field === 'string' && field.length == 0) {
@@ -696,10 +696,10 @@ const QueryBuilder = function() {
                 field = field_array;
             }
 
-            for(let k in field) {
+            for (let k in field) {
                 let like_statement;
                 const v = field[k];
-                k = protect_identifiers(this,k.trim());
+                k = protect_identifiers(this, k.trim());
 
                 // Make sure value is only string, number, or boolean
                 if (!/^(string|number|boolean)$/.test(typeof v)) {
@@ -711,7 +711,7 @@ const QueryBuilder = function() {
                 }
 
                 if (side === 'none') {
-                    like_statement =  k + not + ' LIKE ' + "'" + v + "'";
+                    like_statement = k + not + ' LIKE ' + "'" + v + "'";
                 }
                 else if (side === 'before' || side === 'left') {
                     like_statement = k + not + ' LIKE ' + "'%" + v + "'";
@@ -726,13 +726,13 @@ const QueryBuilder = function() {
                     throw new Error("like(): Invalid direction provided!");
                 }
 
-                this._where(like_statement,null,type,false);
+                this._where(like_statement, null, type, false);
             }
 
             return this;
         },
 
-        from: function(from_param) {
+        from: function (from_param) {
             if (!Array.isArray(from_param)) {
                 from_param = [from_param];
             }
@@ -746,9 +746,9 @@ const QueryBuilder = function() {
                     for (let j in objects) {
                         const v = objects[j].trim();
 
-                        track_aliases(this,v);
+                        track_aliases(this, v);
 
-                        this.from_array.push(protect_identifiers(this,v,true));
+                        this.from_array.push(protect_identifiers(this, v, true));
                     }
                 }
                 else {
@@ -756,16 +756,16 @@ const QueryBuilder = function() {
 
                     // Extract any aliases that might exist.  We use this information
                     // in the protect_identifiers function to know whether to add a table prefix
-                    track_aliases(this,val);
+                    track_aliases(this, val);
 
-                    this.from_array.push(protect_identifiers(this,val,true));
+                    this.from_array.push(protect_identifiers(this, val, true));
                 }
             }
 
             return this;
         },
 
-        join: function(table, relation, direction, escape) {
+        join: function (table, relation, direction, escape) {
             if (typeof table !== 'string' || table.trim().length == 0) {
                 throw new Error("You must provide a table, view, or stored procedure to join to!");
             }
@@ -774,7 +774,7 @@ const QueryBuilder = function() {
             direction = (typeof direction === 'string' && direction.trim().length != 0 ? direction.trim() : '');
             escape = (typeof escape === 'boolean' ? escape : true);
 
-            const valid_directions = ['LEFT','RIGHT','OUTER','INNER','LEFT OUTER','RIGHT OUTER'];
+            const valid_directions = ['LEFT', 'RIGHT', 'OUTER', 'INNER', 'LEFT OUTER', 'RIGHT OUTER'];
 
             if (direction != '') {
                 direction = direction.toUpperCase().trim();
@@ -788,7 +788,7 @@ const QueryBuilder = function() {
                 direction += ' ';
             }
 
-            track_aliases(this,table);
+            track_aliases(this, table);
 
             // Split multiple conditions
             const regex = /\sAND\s|\sOR\s/ig;
@@ -796,7 +796,7 @@ const QueryBuilder = function() {
             const matches = [];
             let k, temp, temp_match, match;
             if (escape === true && m) {
-                while(k = regex.exec(relation)) {
+                while (k = regex.exec(relation)) {
                     matches.push(k);
                 }
 
@@ -806,7 +806,7 @@ const QueryBuilder = function() {
                 for (let j = 0, c = matches.length, s = 0; j < c; s = matches[j].index + matches[j][0].length, j++) {
                     temp = relation.substr(s, matches[j].index - s);
                     temp_match = temp.match(/([\[\]\w\.'-]+)(\s*[^\"\[`'\w]+\s*)(.+)/i);
-                    new_relation += (temp_match ? protect_identifiers(this,temp_match[1],escape) + temp_match[2] + protect_identifiers(this,temp_match[3],escape) : temp);
+                    new_relation += (temp_match ? protect_identifiers(this, temp_match[1], escape) + temp_match[2] + protect_identifiers(this, temp_match[3], escape) : temp);
                     new_relation += matches[j][0];
                 }
 
@@ -816,7 +816,7 @@ const QueryBuilder = function() {
             // Split apart the condition and protect the identifiers
             else if (escape === true && /([\[\]\w\.'-]+)(\s*[^\"\[`'\w]+\s*)(.+)/i.test(relation)) {
                 match = relation.match(/([\[\]\w\.'-]+)(\s*[^\"\[`'\w]+\s*)(.+)/i)
-                relation = ' ON ' + protect_identifiers(this,match[1],true) + match[2] + protect_identifiers(this,match[3],true);
+                relation = ' ON ' + protect_identifiers(this, match[1], true) + match[2] + protect_identifiers(this, match[3], true);
             }
             else if (!has_operator(relation)) {
                 relation = ' USING (' + (escape ? escape_identifiers(relation) : relation) + ')';
@@ -830,7 +830,7 @@ const QueryBuilder = function() {
 
             // Do we want to escape the table name?
             if (escape === true) {
-                table = protect_identifiers(this,table,true);
+                table = protect_identifiers(this, table, true);
             }
 
             const join = direction + 'JOIN ' + table + relation;
@@ -839,7 +839,7 @@ const QueryBuilder = function() {
             return this;
         },
 
-        select: function(select,escape) {
+        select: function (select, escape) {
             // First param must be a non-empty string or array
             if (typeof select === 'string') {
                 select = select.trim();
@@ -867,7 +867,7 @@ const QueryBuilder = function() {
                         let m, open_paren_index, inner_parenthesis;
                         const reg = /\)/g;
                         while ((m = reg.exec(select) !== null)) {
-                            open_paren_index = m.input.substring(0,m.index).lastIndexOf('(');
+                            open_paren_index = m.input.substring(0, m.index).lastIndexOf('(');
                             if (open_paren_index !== -1) {
                                 inner_parenthesis = m.input.substring((open_paren_index + 1), m.index);
                                 if (inner.parenthesis.indexOf(',') !== -1) {
@@ -887,29 +887,29 @@ const QueryBuilder = function() {
                 const val = select[i].trim();
 
                 if (val !== '') {
-                    this.select_array.push(protect_identifiers(this,val,escape));
+                    this.select_array.push(protect_identifiers(this, val, escape));
                 }
             }
             return this;
         },
 
-        select_min: function(select,alias) {
-            return this._min_max_avg_sum(select,alias,'MIN');
+        select_min: function (select, alias) {
+            return this._min_max_avg_sum(select, alias, 'MIN');
         },
 
-        select_max: function(select,alias) {
-            return this._min_max_avg_sum(select,alias,'MAX');
+        select_max: function (select, alias) {
+            return this._min_max_avg_sum(select, alias, 'MAX');
         },
 
-        select_avg: function(select,alias) {
-            return this._min_max_avg_sum(select,alias,'AVG');
+        select_avg: function (select, alias) {
+            return this._min_max_avg_sum(select, alias, 'AVG');
         },
 
-        select_sum: function(select,alias) {
-            return this._min_max_avg_sum(select,alias,'SUM');
+        select_sum: function (select, alias) {
+            return this._min_max_avg_sum(select, alias, 'SUM');
         },
 
-        _min_max_avg_sum: function(select='',alias='',type='MAX') {
+        _min_max_avg_sum: function (select = '', alias = '', type = 'MAX') {
 
             if (typeof select !== 'string' || select === '') {
                 throw Error("Invalid query!");
@@ -918,7 +918,7 @@ const QueryBuilder = function() {
 
             type = type.toUpperCase();
 
-            if (['MAX','MIN','AVG','SUM'].indexOf(type) === -1) {
+            if (['MAX', 'MIN', 'AVG', 'SUM'].indexOf(type) === -1) {
                 throw Error("Invalid function type!");
                 return this;
             }
@@ -927,14 +927,14 @@ const QueryBuilder = function() {
                 alias = create_aliases_from_table(select.trim());
             }
 
-            const sql = type + '(' + protect_identifiers(this,select.trim()) + ') AS ' + alias;
+            const sql = type + '(' + protect_identifiers(this, select.trim()) + ') AS ' + alias;
 
             this.select_array.push(sql);
 
             return this;
         },
 
-        distinct: function(do_distinct) {
+        distinct: function (do_distinct) {
             do_distinct = (typeof do_distinct !== 'boolean' ? true : do_distinct);
 
             if (do_distinct) {
@@ -947,7 +947,7 @@ const QueryBuilder = function() {
             return this;
         },
 
-        group_by: function(by) {
+        group_by: function (by) {
             if (typeof by === 'string') {
                 by = by.trim();
                 if (by.length <= 0) {
@@ -972,23 +972,23 @@ const QueryBuilder = function() {
                 const val = by[key].trim();
 
                 if (val !== '') {
-                    this.group_by_array.push(protect_identifiers(this,val));
+                    this.group_by_array.push(protect_identifiers(this, val));
                 }
             }
             return this;
         },
 
-        having: function(key, value, escape) {
+        having: function (key, value, escape) {
             escape = (typeof escape !== 'boolean' ? true : escape);
             return this._having(key, value, 'AND ', escape);
         },
 
-        or_having: function(key, value, escape) {
+        or_having: function (key, value, escape) {
             escape = (typeof escape !== 'boolean' ? true : escape);
             return this._having(key, value, 'OR ', escape);
         },
 
-        _having: function(key, value, type='AND ', escape) {
+        _having: function (key, value, type = 'AND ', escape) {
 
             let m;
             let key_array = {};
@@ -1010,7 +1010,7 @@ const QueryBuilder = function() {
                             key = key_array;
                         }
                         else {
-                            key = extract_having_parts(key,key_array);
+                            key = extract_having_parts(key, key_array);
                         }
                     }
                     else if (key_is_array === true) {
@@ -1020,7 +1020,7 @@ const QueryBuilder = function() {
                                 throw new Error("having(): You've provided an unparseable format to the having() method..");
                             }
                             else {
-                                key_array = extract_having_parts(key[i],key_array);
+                                key_array = extract_having_parts(key[i], key_array);
                             }
                         }
                         key = key_array;
@@ -1037,7 +1037,7 @@ const QueryBuilder = function() {
                 const prefix = (this.having_array.length == 0 ? '' : type);
 
                 if (escape === true) {
-                    k = protect_identifiers(this,k);
+                    k = protect_identifiers(this, k);
                 }
 
                 if (v === null) {
@@ -1048,7 +1048,7 @@ const QueryBuilder = function() {
                 }
 
                 if (v != '') {
-                    v = ' ' + qb_escape(this,v);
+                    v = ' ' + qb_escape(this, v);
                 }
 
                 this.having_array.push(prefix + k + v);
@@ -1057,7 +1057,7 @@ const QueryBuilder = function() {
             return this;
         },
 
-        order_by: function(orderby, direction) {
+        order_by: function (orderby, direction) {
             let m;
             const rand_word = 'RAND()';
             direction = (typeof direction === 'string' ? direction.toLowerCase().trim() : '');
@@ -1097,10 +1097,10 @@ const QueryBuilder = function() {
                         this.order_by_array.push(rand_word);
                         return this;
                     }
-                    orderby[i] = {field: protect_identifiers(this,m[1].trim()), direction: m[2].trim().toUpperCase()};
+                    orderby[i] = { field: protect_identifiers(this, m[1].trim()), direction: m[2].trim().toUpperCase() };
                 } else {
                     if (/^(ASC|DESC)$/i.test(direction) || direction === '') {
-                        orderby[i] = {field: protect_identifiers(this,orderby[i].trim()), direction: (direction !== '' ? direction.toUpperCase() : 'ASC')};
+                        orderby[i] = { field: protect_identifiers(this, orderby[i].trim()), direction: (direction !== '' ? direction.toUpperCase() : 'ASC') };
                     } else {
                         throw new Error("Invalid direction provided in order_by method! Only 'ASC', 'DESC', and 'RAND' are allowed!");
                     }
@@ -1112,9 +1112,9 @@ const QueryBuilder = function() {
             return this;
         },
 
-        limit: function(limit, offset) {
+        limit: function (limit, offset) {
             clear_array(this.limit_to);
-            this.limit_to.push(prepare_for_limit_and_offset(limit,'limit'));
+            this.limit_to.push(prepare_for_limit_and_offset(limit, 'limit'));
 
             if (offset !== undefined) {
                 return this.offset(offset);
@@ -1123,13 +1123,13 @@ const QueryBuilder = function() {
             return this;
         },
 
-        offset: function(offset) {
+        offset: function (offset) {
             clear_array(this.offset_val);
-            this.offset_val.push(prepare_for_limit_and_offset(offset,'offset'));
+            this.offset_val.push(prepare_for_limit_and_offset(offset, 'offset'));
             return this;
         },
 
-        set: function(key, value, escape) {
+        set: function (key, value, escape) {
             escape = (typeof escape === 'boolean' ? escape : true);
 
             if (typeof key === 'string') {
@@ -1175,14 +1175,14 @@ const QueryBuilder = function() {
                 }
 
                 // Escape the key to be DRY
-                const escaped_key = protect_identifiers(this,i,escape);
+                const escaped_key = protect_identifiers(this, i, escape);
 
                 // Build a temporary object with escaped key and val
                 const temp = {};
                 if (escape === false) {
                     temp[escaped_key] = v;
                 } else {
-                    temp[escaped_key] = qb_escape(this,v);
+                    temp[escaped_key] = qb_escape(this, v);
                 }
 
                 // Determine if this key has already been set
@@ -1207,7 +1207,7 @@ const QueryBuilder = function() {
             return this;
         },
 
-        insert: function(table, set, ignore, suffix) {
+        insert: function (table, set, ignore, suffix) {
             table = table || ''
             ignore = (typeof ignore !== 'boolean' ? false : ignore);
             suffix = (typeof suffix !== 'string' ? '' : ' ' + suffix);
@@ -1248,11 +1248,11 @@ const QueryBuilder = function() {
             return compile_insert(this, ignore, suffix);
         },
 
-        insert_ignore: function(table, set, suffix) {
+        insert_ignore: function (table, set, suffix) {
             return this.insert(table, set, true, suffix);
         },
 
-        insert_batch: function(table,set=null,ignore,suffix) {
+        insert_batch: function (table, set = null, ignore, suffix) {
 
             const orig_table = table = table || '';
             ignore = (typeof ignore !== 'boolean' ? false : ignore);
@@ -1308,12 +1308,13 @@ const QueryBuilder = function() {
 
             const map = [];
             const columns = [];
-
+            const col = [];
             // Obtain all the column names
             for (let key in set[0]) {
                 if (set[0].hasOwnProperty(key)) {
                     if (columns.indexOf(key) == -1) {
-                        columns.push(protect_identifiers(this,key));
+                        col.push(key);
+                        columns.push(protect_identifiers(this, key));
                     }
                 }
             }
@@ -1321,9 +1322,10 @@ const QueryBuilder = function() {
             for (let i = 0; i < set.length; i++) {
                 (i => {
                     const row = [];
-                    for (let key in set[i]) {
-                        if (set[i].hasOwnProperty(key)) {
-                            row.push(qb_escape(this,set[i][key]));
+                    const val = set[i];
+                    for (let w = 0; w < col.length; w++) {
+                        if (val.hasOwnProperty(col[w])) {
+                            row.push(qb_escape(this, val[col[w]]));
                         }
                     }
                     if (row.length != columns.length) {
@@ -1337,7 +1339,7 @@ const QueryBuilder = function() {
             return verb + 'INTO ' + this.from_array[0] + ' (' + columns.join(', ') + ') VALUES ' + map.join(', ') + suffix;
         },
 
-        get: function(table) {
+        get: function (table) {
             if (typeof table === 'string' || Array.isArray(table)) {
                 this.from(table);
             }
@@ -1349,7 +1351,7 @@ const QueryBuilder = function() {
             return compile_select(this);
         },
 
-        get_where: function(table=null, where=null) {
+        get_where: function (table = null, where = null) {
 
             // Check if table is either a string or array
             if (typeof table !== 'string' && !Array.isArray(table))
@@ -1379,12 +1381,12 @@ const QueryBuilder = function() {
             return compile_select(this);
         },
 
-        count: function(table) {
+        count: function (table) {
             if (typeof table === 'string') {
                 this.from(table);
             }
 
-            const sql = 'SELECT COUNT(*) AS ' + protect_identifiers(this,'numrows')
+            const sql = 'SELECT COUNT(*) AS ' + protect_identifiers(this, 'numrows')
                 + build_from_clause(this)
                 + build_join_string(this)
                 + build_where_clause(this);
@@ -1392,7 +1394,7 @@ const QueryBuilder = function() {
             return sql;
         },
 
-        update: function(table, set, where=null) {
+        update: function (table, set, where = null) {
 
             table = table || '';
             set = set || null;
@@ -1462,7 +1464,7 @@ const QueryBuilder = function() {
             return compile_update(this);
         },
 
-        update_batch: function(table='', set=null, index=null, where=null) {
+        update_batch: function (table = '', set = null, index = null, where = null) {
 
 
             // Make sure an index has been provided!
@@ -1548,7 +1550,7 @@ const QueryBuilder = function() {
                 const when_then = {};
                 const ids = [];
                 const where = (this.where_array.length > 0 ? build_where_clause(this) + ' AND ' : '');
-                const chunk = this.set_array.slice(i,100);
+                const chunk = this.set_array.slice(i, 100);
 
                 // Escape the index
                 index = protect_identifiers(this, index);
@@ -1591,7 +1593,7 @@ const QueryBuilder = function() {
             return batches;
         },
 
-        delete: function(table, where) {
+        delete: function (table, where) {
             if (typeof table == 'string' && table.trim().length > 0) {
                 clear_array(this.from_array);
                 this.from(table);
@@ -1609,9 +1611,9 @@ const QueryBuilder = function() {
             return compile_delete(this);
         },
 
-        get_compiled_select: function(table) {
+        get_compiled_select: function (table) {
             if (typeof table !== 'undefined') {
-                track_aliases(this,table);
+                track_aliases(this, table);
                 this.from(table);
             }
             else {
@@ -1624,56 +1626,56 @@ const QueryBuilder = function() {
             return compile_select(this);
         },
 
-        get_compiled_delete: function(table) {
+        get_compiled_delete: function (table) {
             if (typeof table !== 'function') {
-                track_aliases(this,table);
+                track_aliases(this, table);
                 this.from(table);
             }
 
             return compile_delete(this);
         },
 
-        get_compiled_update: function(table) {
+        get_compiled_update: function (table) {
             if (typeof table !== 'function') {
-                track_aliases(this,table);
+                track_aliases(this, table);
                 this.from(table);
             }
             return compile_update(this);
         },
 
-        get_compiled_insert: function(table) {
+        get_compiled_insert: function (table) {
             if (typeof table !== 'function') {
-                track_aliases(this,table);
+                track_aliases(this, table);
                 this.from(table);
             }
             return compile_insert(this);
         },
 
-        compile_select: function(table) {
+        compile_select: function (table) {
             return this.get_compiled_select(table);
         },
 
-        compile_delete: function(table) {
+        compile_delete: function (table) {
             return this.get_compiled_delete(table);
         },
 
-        compile_update: function(table) {
+        compile_update: function (table) {
             return this.get_compiled_update(table);
         },
 
-        compile_insert: function(table) {
+        compile_insert: function (table) {
             return this.get_compiled_insert(table);
         },
 
-        last_query: function() {
+        last_query: function () {
             return this.last_query_string[0] || '';
         },
 
-        escape: function(val) {
+        escape: function (val) {
             return qb_escape(this, val);
         },
 
-        empty_table: function(table) {
+        empty_table: function (table) {
             if (typeof table === 'string' && table.trim().length > 0) {
                 clear_array(this.from_array);
                 this.from(table);
@@ -1687,7 +1689,7 @@ const QueryBuilder = function() {
             return "DELETE FROM " + this.from_array[0];
         },
 
-        truncate: function(table) {
+        truncate: function (table) {
             if (typeof table === 'string' && table.trim().length > 0) {
                 clear_array(this.from_array);
                 this.from(table);
