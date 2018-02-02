@@ -1,22 +1,16 @@
 {
-  "name": "node-querybuilder",
-  "version": "1.0.3",
-  "author": "Kyle Farris <kyle@chomponllc.com>",
+  "name": "js-mysql-querybuilder",
+  "version": "0.0.1",
   "description": "Modeled after Codeigniter's QueryBuilder. Build and execute queries in a safe and database-agnostic way.",
   "keywords": "nodejs, node, mysql, active record, activerecord, querybuilder, query builder, codeigniter, postgres, mssql, mongo, sqlite, translator",
   "scripts": {
     "test": "make test"
   },
-  "homepage": "http://kylefarris.github.io/node-querybuilder/",
+  "homepage": "http://Shinichi52.github.io/node-querybuilder/",
   "repository": {
     "type": "git",
-    "url": "git@github.com:kylefarris/node-querybuilder.git"
+    "url": "git@github.com:Shinichi52/node-querybuilder.git"
   },
-  "contributors": [
-    "Martin Tajur <martin@tajur.ee>",
-    "Daniel Bretoi <daniel@bretoi.com>",
-    "Daehyub Kim <lateau@gmail.com>"
-  ],
   "dependencies": {
     "lodash.assign": "^4.0.7",
     "mysql": "2.10.*"
